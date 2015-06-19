@@ -112,15 +112,15 @@ namespace Sep.Git.Tfs.Core
         /// Gets the TFS server-side paths of all subtrees of this remote.
         /// Valid if the remote has subtrees, which occurs when <see cref="TfsRepositoryPath"/> is null.
         /// </summary>
-        public string[] TfsSubtreePaths 
-        { 
+        public string[] TfsSubtreePaths
+        {
             get
             {
                 if (tfsSubtreePaths == null)
                     tfsSubtreePaths = Repository.GetSubtrees(this).Select(x => x.TfsRepositoryPath).ToArray();
 
                 return tfsSubtreePaths;
-            } 
+            }
         }
         private string[] tfsSubtreePaths = null;
 
@@ -178,7 +178,7 @@ namespace Sep.Git.Tfs.Core
 
                 if (this.IsSubtree)
                 {
-                    if(dir != null)
+                    if (dir != null)
                     {
                         return Path.Combine(dir, this.Prefix);
                     }
@@ -290,7 +290,7 @@ namespace Sep.Git.Tfs.Core
                 else
                     tfsPath = p.Prefix + "/" + tfsPath;
             }
-            
+
             while (tfsPath.StartsWith("/"))
                 tfsPath = tfsPath.Substring(1);
             return tfsPath;
@@ -329,7 +329,7 @@ namespace Sep.Git.Tfs.Core
             do
             {
                 fetchedChangesets = FetchChangesets(true, lastChangesetIdToFetch);
-                if(!fetchedChangesets.Any())
+                if (!fetchedChangesets.Any())
                     return fetchResult;
 
                 var objects = BuildEntryDictionary();
@@ -448,7 +448,7 @@ namespace Sep.Git.Tfs.Core
                              "'...");
             var isIgnoringBranchesDetected = Repository.ReadAllTfsRemotes().Count() < 2;
             stdout.WriteLine("=> Branch support " + (isIgnoringBranchesDetected ? "disabled!" : "enabled!"));
-            if(isIgnoringBranchesDetected)
+            if (isIgnoringBranchesDetected)
                 stdout.WriteLine("   if you want to enable branch support, use the command:" + Environment.NewLine
                     + "    git config --local " + GitTfsConstants.IgnoreBranches + " false");
             globals.Repository.SetConfig(GitTfsConstants.IgnoreBranches, isIgnoringBranchesDetected.ToString());
@@ -459,9 +459,11 @@ namespace Sep.Git.Tfs.Core
         {
             if (ExportMetadatas)
             {
-                if (changeset.Summary.Workitems.Any()) {
+                if (changeset.Summary.Workitems.Any())
+                {
                     var workItemIds = TranslateWorkItems(changeset.Summary.Workitems.Select(wi => wi.Id.ToString()));
-                    if (workItemIds != null) {
+                    if (workItemIds != null)
+                    {
                         log.Log += "\nwork-items: " + string.Join(", ", workItemIds.Select(s => "#" + s));
                     }
                 }
@@ -639,7 +641,7 @@ namespace Sep.Git.Tfs.Core
                 }
 
                 if (branch.IsRenamedBranch)
-                    remote.Fetch(renameResult:renameResult);
+                    remote.Fetch(renameResult: renameResult);
             }
 
             return remote;
@@ -666,7 +668,7 @@ namespace Sep.Git.Tfs.Core
 
         private IEnumerable<ITfsChangeset> FetchChangesets(bool byLots, long lastVersion = -1)
         {
-            if(!IsSubtreeOwner)
+            if (!IsSubtreeOwner)
                 return Tfs.GetChangesets(TfsRepositoryPath, MaxChangesetId + 1, this, lastVersion, byLots);
 
             return globals.Repository.GetSubtrees(this)
@@ -755,7 +757,8 @@ namespace Sep.Git.Tfs.Core
         private LogEntry CopyTree(string lastCommit, ITfsChangeset changeset)
         {
             LogEntry result = null;
-            WithWorkspace(changeset.Summary, workspace => {
+            WithWorkspace(changeset.Summary, workspace =>
+            {
                 var treeBuilder = workspace.Remote.Repository.GetTreeBuilder(null);
                 result = changeset.CopyTree(treeBuilder, workspace);
                 result.Tree = treeBuilder.GetTree();
@@ -782,7 +785,7 @@ namespace Sep.Git.Tfs.Core
         public void Unshelve(string shelvesetOwner, string shelvesetName, string destinationBranch, Action<Exception> ignorableErrorHandler, bool force)
         {
             var destinationRef = GitRepository.ShortToLocalName(destinationBranch);
-            if(Repository.HasRef(destinationRef))
+            if (Repository.HasRef(destinationRef))
                 throw new GitTfsException("ERROR: Destination branch (" + destinationBranch + ") already exists!");
 
             var shelvesetChangeset = Tfs.GetShelvesetData(this, shelvesetOwner, shelvesetName);
@@ -891,12 +894,12 @@ namespace Sep.Git.Tfs.Core
 
         public bool MatchesUrlAndRepositoryPath(string tfsUrl, string tfsRepositoryPath)
         {
-            if(!MatchesTfsUrl(tfsUrl))
+            if (!MatchesTfsUrl(tfsUrl))
                 return false;
 
-            if(TfsRepositoryPath == null)
+            if (TfsRepositoryPath == null)
                 return tfsRepositoryPath == null;
-            
+
             return TfsRepositoryPath.Equals(tfsRepositoryPath, StringComparison.OrdinalIgnoreCase);
         }
 

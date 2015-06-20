@@ -241,6 +241,46 @@ namespace Sep.Git.Tfs.Test.Integration
                 commit: "843a915aea98894fef51379d68a0f309e8537dd5",
                 tree: "cf8a497b3a40028bee363a613fe156b9d37350bb");
         }
+
+        [FactExceptOnUnix]
+        public void CloneWithRenamedTrunkAndRenamedBranches()
+        {
+            h.SetupFake(r =>
+            {
+                r.SetRootBranch("$/tfstest/main");
+
+                r.Changeset(1, "create project", DateTime.Parse("2015-05-01T16:21:37.15Z"))
+                    .Change(TfsChangeType.Add | TfsChangeType.Encoding, TfsItemType.Folder, "$/tfstest", itemId: 1)
+                    ;
+
+                r.Changeset(2, "initial", DateTime.Parse("2015-05-01T16:27:37.15Z"))
+                    .Change(TfsChangeType.Add | TfsChangeType.Encoding, TfsItemType.Folder, "$/tfstest/subfolder", itemId: 2)
+                    .Change(TfsChangeType.Add | TfsChangeType.Encoding, TfsItemType.Folder, "$/tfstest/subfolder/main", itemId: 3)
+                    .Change(TfsChangeType.Add | TfsChangeType.Edit | TfsChangeType.Encoding, TfsItemType.File, "$/tfstest/subfolder/main/readme.txt", "file content", 4)
+                    ;
+
+                r.BranchChangeset(3, "branch", DateTime.Parse("2015-05-01T16:32:37.15Z"), "$/tfstest/subfolder/main", "$/tfstest/subfolder/branch1", 2)
+                    .Change(TfsChangeType.Branch, TfsItemType.Folder, "$/tfstest/subfolder/branch1", itemId: 5)
+                    .Change(TfsChangeType.Branch, TfsItemType.File, "$/tfstest/subfolder/branch1/readme.txt", itemId: 6)
+                    ;
+
+                r.Changeset(4, "rename main", DateTime.Parse("2015-05-01T16:37:37.15Z"))
+                    .Change(TfsChangeType.Rename, TfsItemType.Folder, "$/tfstest/main", itemId: 3)
+                    .Change(TfsChangeType.Rename, TfsItemType.File, "$/tfstest/main/readme.txt", "file content", 4)
+                    ;
+
+                r.Changeset(5, "rename branch", DateTime.Parse("2015-05-01T16:39:37.15Z"))
+                    .Change(TfsChangeType.Rename, TfsItemType.Folder, "$/tfstest/branch1", itemId: 5)
+                    .Change(TfsChangeType.Rename, TfsItemType.File, "$/tfstest/branch1/readme.txt", "file content", 6)
+                    ;
+            });
+
+            h.TfsUrl = "https://tfs:8080/tfs/defaultcollection";
+
+            h.Run("clone", h.TfsUrl, "$/tfstest/main", "tfstest", "--with-branches");
+            h.AssertFileInWorkspace(@"tfstest", "readme.txt", "file content");
+        }
+
         private readonly string[] RefsInNewClone = new[] { "HEAD", "refs/heads/master", "refs/remotes/tfs/default" };
 
         /// <summary>
